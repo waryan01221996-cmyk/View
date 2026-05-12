@@ -1,0 +1,37 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@2
+
+jobs:
+  run-bot:
+    docker:
+      - image: cimg/python:3.10-browsers
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: Cek IP dan Eksekusi Bot
+          command: |
+            echo "Alamat IP Server saat ini:"
+            curl -s ifconfig.me
+            echo -e "\n------------------------------------------"
+            python bot.py
+
+workflows:
+  saat_update:
+    jobs:
+      - run-bot
+
+  setiap_30_menit:
+    triggers:
+      - schedule:
+          # Menggunakan format daftar menit agar tidak error schema
+          cron: "0,30 * * * *"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - run-bot
