@@ -1,37 +1,24 @@
 version: 2.1
 
-orbs:
-  python: circleci/python@2
-
 jobs:
-  run-bot:
+  run_bot_tor:
     docker:
       - image: cimg/python:3.10-browsers
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: pip
       - run:
-          name: Cek IP dan Eksekusi Bot
+          name: Install Tor and Privoxy
           command: |
-            echo "Alamat IP Server saat ini:"
-            curl -s ifconfig.me
-            echo -e "\n------------------------------------------"
-            python bot.py
-
-workflows:
-  saat_update:
-    jobs:
-      - run-bot
-
-  setiap_30_menit:
-    triggers:
-      - schedule:
-          # Menggunakan format daftar menit agar tidak error schema
-          cron: "0,30 * * * *"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
+            sudo apt-get update
+            sudo apt-get install -y tor privoxy
+            # Konfigurasi Privoxy agar nyambung ke Tor
+            echo "forward-socks5t / 127.0.0.1:9050 ." | sudo tee -a /etc/privoxy/config
+      - run:
+          name: Install Dependencies
+          command: pip install selenium
+      - run:
+          name: Run Script
+          command: |
+            chmod +x start.sh
+            ./start.sh
       - run-bot
