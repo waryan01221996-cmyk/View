@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  run_bot_tor:
+  build:
     docker:
       - image: cimg/python:3.10-browsers
     steps:
@@ -11,14 +11,19 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y tor privoxy
-            # Konfigurasi Privoxy agar nyambung ke Tor
             echo "forward-socks5t / 127.0.0.1:9050 ." | sudo tee -a /etc/privoxy/config
+            sudo service tor start
+            sudo service privoxy start
       - run:
           name: Install Dependencies
           command: pip install selenium
       - run:
-          name: Run Script
+          name: Run Bot
           command: |
             chmod +x start.sh
             ./start.sh
-      - run-bot
+
+workflows:
+  main_workflow:
+    jobs:
+      - build
